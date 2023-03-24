@@ -23,7 +23,8 @@ type Board struct {
 	cells [][]Cell
 	mines int
 	won   bool
-	lost	bool
+	lost  bool
+	count int
 }
 
 type Game struct {
@@ -96,13 +97,26 @@ func (b *Board) display() {
 	}
 }
 
+func (b *Board) openAdjacent(row int, col int) {
+	for _, cell := range b.adjacentCells(row, col) {
+		if !cell.isMine && !cell.isOpen {
+			b.cells[cell.xpos][cell.ypos].isOpen = true
+			if cell.adjacentMines == 0 {
+				b.openAdjacent(cell.xpos, cell.ypos)
+			}
+		}
+	}
+}
+
 func (b *Board) action(a string, row int, col int) {
-  if a == "o" {
+	if a == "o" {
 		b.cells[row][col].isOpen = true
-		for _, cell := range b.adjacentCells(row, col) {
-			if !cell.isMine {
-				b.action("f", cell.xpos, cell.ypos)
-				return
+		if b.cells[row][col].adjacentMines == 0 {
+			for _, cell := range b.adjacentCells(row, col) {
+				if !cell.isMine {
+					b.cells[cell.xpos][cell.ypos].isOpen = true
+					b.openAdjacent(cell.xpos, cell.ypos)
+				}
 			}
 		}
 	} else {
@@ -110,6 +124,20 @@ func (b *Board) action(a string, row int, col int) {
 	}
 }
 
+func (b *Board) evaluate() {
+	opened := 0
+	for row := 0; row < b.rows; row++ {
+		for col := 0; col < b.cols; col++ {
+			if b.cells[row][col].isOpen {
+				opened++
+			}
+		}
+	}
+	if opened == b.count {
+		b.won = true
+	}
+
+}
 func (b *Board) move(c string) {
 	str := strings.Split(c, ",")
 
@@ -124,27 +152,31 @@ func (b *Board) move(c string) {
 	}
 
 	b.action(str[2], row, col)
+	b.evaluate()
 	b.display()
 }
 
 func main() {
-	board := new(Board)
-	board.rows = 6
-	board.cols = 6 
-	board.mines = 5 
-	board.won = false
-	board.lost = false
-	board.init()
+	b := new(Board)
+	b = &Board{
+		rows: 6,
+		cols: 6,
+		mines: 5,
+		won: false,
+		lost: false,
+	}
+	b.count = b.rows * b.cols - b.mines
+	b.init()
 	for {
-		fmt.Print("Enter the row,col: ")
+		fmt.Print("Enter the row,col,command(o,f): ")
 		var input string
 		fmt.Scanln(&input)
-		board.move(input)
-		if board.won {
-			log.Println("You won!")
+		b.move(input)
+		if b.won {
+			log.Println("You won!😎")
 			break
 		}
-		if board.lost {
+		if b.lost {
 			log.Println("oops!")
 			break;
 		}
