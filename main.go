@@ -177,7 +177,7 @@ func main() {
 			break
 		}
 		if b.lost {
-			log.Println("oops!")
+			log.Println("boom! 😵")
 			break;
 		}
 	}
