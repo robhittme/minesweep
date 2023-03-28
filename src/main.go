@@ -88,8 +88,10 @@ func (b *Board) symbol (c Cell) string {
 }
 
 func (b *Board) display() {
+
+	log.Println("[x 0 1 2]")
 	for row := 0; row < b.rows; row++ {
-		val := []string{}
+		val := []string{strconv.Itoa(row)}
 		for col := 0; col < b.cols; col++ {
 			val = append(val, b.symbol(b.cells[row][col]))
 		}
@@ -159,9 +161,9 @@ func (b *Board) move(c string) {
 func main() {
 	b := new(Board)
 	b = &Board{
-		rows: 6,
-		cols: 6,
-		mines: 5,
+		rows: 3,
+		cols: 3,
+		mines: 3,
 		won: false,
 		lost: false,
 	}
